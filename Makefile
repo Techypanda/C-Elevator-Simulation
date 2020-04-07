@@ -11,4 +11,5 @@ CFLAGS += -D DEBUG -g # -g for valgrind
 DEBUG: clean $(EXEC)
 endif
 
-git pull origin master
+update :
+	git pull origin master
