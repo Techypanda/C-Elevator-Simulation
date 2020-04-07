@@ -15,6 +15,9 @@ endif
 $(EXEC) : $(OBJS)
 	$(CC) $(OBJS) -o $(EXEC)
 
+program.o : program.c program.h
+	$(CC) $(CFLAGS) program.c
+
 request.o : request.c request.h
 	$(CC) $(CFLAGS) request.c
 
