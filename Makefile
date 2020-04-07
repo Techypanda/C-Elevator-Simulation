@@ -5,7 +5,7 @@
 CC = gcc
 CFLAGS = -Wall -Werror -pedantic -ansi -std=c89 -c
 EXEC = lift_sim_A
-OBJS = request.o
+OBJS = request.o program.o
 
 ifdef DEBUG
 CFLAGS += -D DEBUG -g # -g for valgrind
