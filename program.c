@@ -5,12 +5,12 @@ int main(int argc, char** argv) {
     if (argc != 3) {
         bufferSize = strtol(argv[1]);
         if ((errno == ERANGE && (val == LONG_MAX || val == LONG_MIN)) || (errno != 0 && val == 0)) {
-            fprintf(stderr, "Invalid Number Entered for m: %d\n", argv[1]);
+            fprintf(stderr, "Invalid Number Entered for m: %s\n", argv[1]);
             exit(EXIT_FAILURE);
         }
         liftTime = strtol(argv[2]);
         if ((errno == ERANGE && (val == LONG_MAX || val == LONG_MIN)) || (errno != 0 && val == 0)) {
-            fprintf(stderr, "Invalid Number Entered for m: %d\n", argv[1]);
+            fprintf(stderr, "Invalid Number Entered for m: %s\n", argv[1]);
             exit(EXIT_FAILURE);
         }
         printf("Reached with values m:%d and t:%d\n",bufferSize,liftTime);
