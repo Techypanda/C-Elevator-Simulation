@@ -3,7 +3,7 @@
 # Conditional Comp: None
 
 CC = gcc
-CFLAGS = -Wall -Werror -pedantic -ansi -std=c89 -c89 -c
+CFLAGS = -Wall -Werror -pedantic -ansi -std=c89 -c
 EXEC = lift_sim_A
 OBJS = request.o
 

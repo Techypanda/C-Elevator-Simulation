@@ -1,5 +1,5 @@
-#include "request.h";
-#include <stdlib.h>;
+#include "request.h"
+#include <stdlib.h>
 
 request* createRequest(int inRequest, int inDestination) {
     request* newRequest = malloc(sizeof(request));
