@@ -13,3 +13,6 @@ endif
 
 update :
 	git pull origin master
+
+clean :
+	rm -Rf $(EXEC) *.o *.log
