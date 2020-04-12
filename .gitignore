@@ -1,3 +1,5 @@
+*.class
 *.o
 lift_sim_A
 lift_sim_B
+sim_input
