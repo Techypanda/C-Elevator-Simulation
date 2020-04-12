@@ -1,14 +1,24 @@
-#include <stdlib.h>
 #include "queue.h"
-/* THIS IS A PRIVATE METHOD, IT SHOULD NOT BE USED OUTSIDE OF THIS
-C FILE */
-listNode* createNode(void* inData) {
-    listNode* newNode = malloc(sizeof(listNode));
-    newNode->data = inData;
-    newNode->next = NULL;
-    return newNode;
-    /*https://www.geeksforgeeks.org/queue-linked-list-implementation/*/
+#include "list.h"
+queue* createQueue() {
+    queue* newQueue = (queue*)malloc(sizeof(queue));
+    newQueue->list = createLinkedList();
+    return newQueue;
 }
-queue* newQueue() {
 
+void freeQueue(queue* myQueue, void (*freeMethod)(void* inData)) {
+    freeLinkedList(myQueue->list, freeMethod);
+    free(myQueue);
+}
+
+void enqueue(void* inObject, queue* myQueue) {
+    insertLast(myQueue->list, inObject);
+}
+
+void* dequeue(queue* myQueue) {
+    return removeLast(myQueue->list);
+}
+
+void* peek(queue* myQueue) {
+    return myQueue->list->tail;
 }
