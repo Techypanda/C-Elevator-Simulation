@@ -5,7 +5,7 @@
 CC = gcc
 CFLAGS = -Wall -Werror -pedantic -ansi -std=c89 -c
 EXEC = lift_sim_A
-OBJS = request.o program.o queue.o
+OBJS = request.o program.o queue.o list.o
 
 ifdef DEBUG
 CFLAGS += -D DEBUG -g # -g for valgrind
@@ -24,14 +24,17 @@ request.o : request.c request.h
 queue.o : queue.c queue.h
 	$(CC) $(CFLAGS) queue.c
 
+list.o : list.c list.h
+	$(CC) $(CFLAGS) list.c
+
 queueTestHarness.o : queueTestHarness.c
 	$(CC) $(CFLAGS) queueTestHarness.c
 
 update :
 	git pull origin master
 
-queueTest : queue.o queueTestHarness.o
-	$(CC) queue.o queueTestHarness.o -o queueTest
+queueTest : list.o queue.o queueTestHarness.o
+	$(CC) list.o queue.o queueTestHarness.o -o queueTest
 
 clean :
 	rm -Rf $(EXEC) *.o *.log
