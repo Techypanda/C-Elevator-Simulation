@@ -1,3 +1,4 @@
+#include <stdlib.h>
 #include "queue.h"
 #include "list.h"
 queue* createQueue() {

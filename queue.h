@@ -5,7 +5,7 @@ typedef struct queue {
     linkedList* list;
 } queue;
 queue* createQueue();
-void freeQueue(queue* myQueue);
+void freeQueue(queue* myQueue, void (*freeMethod)(void* inData));
 void enqueue(void* inObject, queue* myQueue);
 void* dequeue(queue* myQueue);
 void* peek(queue* myQueue);
