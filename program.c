@@ -47,18 +47,18 @@ int main(int argc, char** argv) {
 
 void beginSimulation(int bufferSize, int liftTime) {
     pthread_t LiftR;
-    pthread_t Lift_1;
+    pthread_t Lift_1, Lift_2, Lift_3;
     queue* buffer = createQueue(bufferSize);
     liftStruct* myLifts = initLiftStruct(buffer, bufferSize, 0, liftTime, &LiftR,
     &LiftR, &LiftR);
-    pthread_create(&LiftR, NULL, &requestt, myLifts);
     pthread_create(&Lift_1, NULL, &lift, myLifts);
-    /*pthread_create(&Lift_2, NULL, &lift, myLifts);*/
-    /*pthread_create(&Lift_3, NULL, &lift, myLifts);*/
+    pthread_create(&Lift_2, NULL, &lift, myLifts);
+    pthread_create(&Lift_3, NULL, &lift, myLifts);
+    pthread_create(&LiftR, NULL, &requestt, myLifts);
     pthread_join(LiftR, NULL);
     pthread_join(Lift_1, NULL);
-    /*pthread_join(Lift_2, NULL);*/
-    /*pthread_join(Lift_3, NULL);*/
+    pthread_join(Lift_2, NULL);
+    pthread_join(Lift_3, NULL);
     freeQueue(buffer, free);
     freeLiftStruct(myLifts);
 }

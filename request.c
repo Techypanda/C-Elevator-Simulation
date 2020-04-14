@@ -26,20 +26,55 @@ request* createRequest(int inRequest, int inDestination) {
     return NULL;
 } OLD BEFORE SEMAPHORE IMPLEMENTATION*/
 
-void* requestt(void* args) {
+/*void* requestt(void* args) {
     FILE* file = fopen("sim_input", "r");
     int destination, from, fscanfReturn;
     liftStruct* myLift = (liftStruct*)args;
+    pthread_mutex_lock(&(myLift->mutexLock));
     fscanfReturn = fscanf(file, "%d %d\n", &from, &destination);
-    while(fscanfReturn != EOF) { /* Keep Going Till End Of File */
-        if ((*(myLift->remainingSemaphore)) != 0) {
+    while(fscanfReturn != EOF) {
+        if ((*(myLift->remainingSemaphore)) > 0) {
             enqueue(createRequest(from, destination), myLift->buffer);
             fscanfReturn = fscanf(file, "%d %d\n", &from, &destination);
             (*(myLift->remainingSemaphore)) -= 1;
             (*(myLift->countSemaphore)) += 1;
-        } /* ELSE THEN WAIT */
+        }
     }
     fclose(file);
     (*(myLift->finishedRead)) = 1;
+    pthread_mutex_unlock(&(myLift->mutexLock));
+    return NULL;
+}*/
+
+void* requestt(void* args) {
+    FILE* file = fopen("sim_input", "r");
+    int destination, from, fscanfReturn;
+    liftStruct* myLift = (liftStruct*)args;
+    pthread_mutex_lock(&(myLift->mutexLock));
+    fscanfReturn = fscanf(file, "%d %d\n", &from, &destination);
+    while (fscanfReturn != EOF) {
+        while ((*(myLift->countSemaphore)) > 0) {
+            #ifdef DEBUG
+            printf("THREAD %ld: Waiting On Condition empty in request.c\n", pthread_self());
+            #endif
+            pthread_cond_wait(&(myLift->empty), &(myLift->mutexLock));
+        }
+        while (fscanfReturn != EOF && (*(myLift->remainingSemaphore)) > 0) {
+            enqueue(createRequest(from, destination), myLift->buffer);
+            fscanfReturn = fscanf(file, "%d %d\n", &from, &destination);
+            (*(myLift->remainingSemaphore)) -= 1;
+            (*(myLift->countSemaphore)) += 1;
+        }
+        #ifdef DEBUG
+        printf("THREAD %ld: Signaling Condition full in request.c\n", pthread_self());
+        #endif
+        pthread_cond_signal((&(myLift->full)));
+    }
+    (*(myLift->finishedRead)) = 1;
+    pthread_mutex_unlock(&(myLift->mutexLock));
+    #ifdef DEBUG
+    printf("Signaling Condition full in request END OF LINE!!.c\n");
+    #endif
+    pthread_cond_signal((&(myLift->full)));
     return NULL;
 }
