@@ -2,6 +2,12 @@
 #include <stdlib.h>
 #include <errno.h>
 #include <limits.h>
+#include <pthread.h>
+#include "queue.h"
+#include "program.h"
+#include "request.h"
+#include "lifts.h"
+
 int main(int argc, char** argv) {
     char* endptr;
     int bufferSize, liftTime;
@@ -28,10 +34,31 @@ int main(int argc, char** argv) {
             fprintf(stderr, "Invalid Number Entered for m: %s\n", argv[1]);
             exit(EXIT_FAILURE);
         }
+        #ifdef DEBUG
         printf("Reached with values m:%d and t:%d\n",bufferSize,liftTime);
+        #endif
+        beginSimulation(bufferSize, liftTime);
     } else {
         fprintf(stderr, "Invalid format entered!\nExpected: lift_sim_A m t\nm = buffer size\nt = time required by each lift\n");
         exit(EXIT_FAILURE);
     }
-    return(0);    
+    return(0);
+}
+
+void beginSimulation(int bufferSize, int liftTime) {
+    pthread_t LiftR;
+    pthread_t Lift_1, Lift_2, Lift_3;
+    queue* buffer = createQueue(bufferSize);
+    liftStruct* myLifts = initLiftStruct(buffer, bufferSize, 0, liftTime, &Lift_1,
+    &Lift_2, &Lift_3);
+    pthread_create(&LiftR, NULL, &requestt, myLifts);
+    pthread_create(&Lift_1, NULL, &lift, myLifts);
+    pthread_create(&Lift_2, NULL, &lift, myLifts);
+    pthread_create(&Lift_3, NULL, &lift, myLifts);
+    pthread_join(LiftR, NULL);
+    pthread_join(Lift_1, NULL);
+    pthread_join(Lift_2, NULL);
+    pthread_join(Lift_3, NULL);
+    /*freeQueue(buffer, free);
+    free(myLifts);*/
 }

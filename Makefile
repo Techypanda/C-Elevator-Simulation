@@ -5,7 +5,7 @@
 CC = gcc
 CFLAGS = -Wall -Werror -pedantic -ansi -std=c89 -c
 EXEC = lift_sim_A
-OBJS = request.o program.o queue.o list.o
+OBJS = request.o program.o queue.o list.o lifts.o
 
 ifdef DEBUG
 CFLAGS += -D DEBUG -g # -g for valgrind
@@ -13,7 +13,10 @@ DEBUG: clean $(EXEC)
 endif
 
 $(EXEC) : $(OBJS)
-	$(CC) $(OBJS) -o $(EXEC)
+	$(CC) -pthread $(OBJS) -o $(EXEC)
+
+lifts.o : lifts.c lifts.h
+	$(CC) $(CFLAGS) lifts.c
 
 program.o : program.c program.h
 	$(CC) $(CFLAGS) program.c
@@ -36,5 +39,11 @@ update :
 queueTest : list.o queue.o queueTestHarness.o
 	$(CC) list.o queue.o queueTestHarness.o -o queueTest
 
+siminputgenerator.class : siminputgenerator.java
+	javac siminputgenerator.java
+
+siminput : siminputgenerator.class
+	java siminputgenerator.java
+
 clean :
-	rm -Rf $(EXEC) *.o *.log
+	rm -Rf $(EXEC) queueTest *.o *.log *.class

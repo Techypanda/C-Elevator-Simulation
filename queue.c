@@ -1,9 +1,10 @@
 #include <stdlib.h>
 #include "queue.h"
 #include "list.h"
-queue* createQueue() {
+queue* createQueue(int inBuffer) {
     queue* newQueue = (queue*)malloc(sizeof(queue));
     newQueue->list = createLinkedList();
+    newQueue->bufferSize = inBuffer;
     return newQueue;
 }
 
@@ -13,7 +14,7 @@ void freeQueue(queue* myQueue, void (*freeMethod)(void* inData)) {
 }
 
 void enqueue(void* inObject, queue* myQueue) {
-    insertLast(myQueue->list, inObject);
+    insertStart(myQueue->list, inObject);
 }
 
 void* dequeue(queue* myQueue) {
