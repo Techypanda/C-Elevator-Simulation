@@ -32,14 +32,14 @@ void* requestt(void* args) {
     liftStruct* myLift = (liftStruct*)args;
     fscanfReturn = fscanf(file, "%d %d\n", &from, &destination);
     while(fscanfReturn != EOF) { /* Keep Going Till End Of File */
-        if (myLift->remainingSemaphore != 0) {
+        if ((*(myLift->remainingSemaphore)) != 0) {
             enqueue(createRequest(from, destination), myLift->buffer);
             fscanfReturn = fscanf(file, "%d %d\n", &from, &destination);
-            myLift->remainingSemaphore -= 1;
-            myLift->countSemaphore += 1;
+            (*(myLift->remainingSemaphore)) -= 1;
+            (*(myLift->countSemaphore)) += 1;
         } /* ELSE THEN WAIT */
     }
     fclose(file);
-    myLift->finishedRead = 1;
+    (*(myLift->finishedRead)) = 1;
     return NULL;
 }

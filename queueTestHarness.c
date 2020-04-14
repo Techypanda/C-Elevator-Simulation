@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 int main() {
-    int i;
+    int i; char* a; queue* newQueue;
     queue* myQueue = createQueue(9999);
     for (i = 0; i < 100; i++) {
         enqueue(&i, myQueue);
@@ -11,17 +11,14 @@ int main() {
     for (i = 0; i < 99; i++) {
         printf(" %d", *((int*)dequeue(myQueue)));
     }
-    for (i = 0; i < 9999; i++) {
-        printf(" %d", *((int*)dequeue(myQueue)));
-    }
     printf("\n");
-    /*freeQueue(myQueue, &free);*/
+    freeQueue(myQueue, &free);
     /* ^^^ Passed with no leaks. */
-    /*newQueue = createQueue();
+    newQueue = createQueue(9999);
     for (i = 0; i < 50; i++) {
         a = malloc(sizeof(char));
         enqueue(a, newQueue);
     }
-    freeQueue(newQueue, &free);*/
+    freeQueue(newQueue, &free);
     return(0);
 }
