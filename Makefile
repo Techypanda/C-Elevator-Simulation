@@ -59,4 +59,4 @@ siminput : siminputgenerator.class
 	java siminputgenerator.java
 
 clean :
-	rm -Rf $(EXEC) queueTest *.o *.log *.class
+	rm -Rf $(EXEC) queueTest *.o *.log *.class out_sim

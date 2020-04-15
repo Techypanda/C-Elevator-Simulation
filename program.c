@@ -58,6 +58,7 @@ int main(int argc, char** argv) {
 }
 
 void beginSimulation(int bufferSize, int liftTime) {
+    int totalMovements = 0, totalRequests = 0;
     FILE* out_sim;
     liftStruct* liftZero, *liftOne, *liftTwo, *liftThree;
     pthread_mutexattr_t canShare;
@@ -92,6 +93,13 @@ void beginSimulation(int bufferSize, int liftTime) {
     pthread_join(Lift_1, NULL);
     pthread_join(Lift_2, NULL);
     pthread_join(Lift_3, NULL);
+    totalMovements += *((liftOne->liftReturnVals) + 0);
+    totalMovements += *((liftTwo->liftReturnVals) + 0);
+    totalMovements += *((liftThree->liftReturnVals) + 0);
+    totalRequests += *((liftOne->liftReturnVals) + 1);
+    totalRequests += *((liftTwo->liftReturnVals) + 1);
+    totalRequests += *((liftThree->liftReturnVals) + 1);
+    fprintf(out_sim, "Total number of movements: %d\nTotal number of requests: %d\n", totalMovements, totalRequests);
     freeLiftStruct(liftZero);
     freeLiftStruct(liftOne);
     freeLiftStruct(liftTwo);

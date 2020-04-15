@@ -6,10 +6,12 @@
 #define LIFTS_H
 #define TRUE 1
 #define FALSE 0
+#define CALCDISTANCE(a,b,c,d) ((a - b) + (c - d))
 typedef struct liftStruct { /* Lift One */
     queue* buffer;
     request* previousRequest;
     int* finishedRead;
+    int* liftReturnVals; /* [0] = #movement, [1] = #requests */
     int liftTimer;
     int liftNumber;
     int maxBufferSize;
