@@ -44,8 +44,8 @@ void* requestt(void* args) {
                     fscanfReturn = fscanf(file, "%d %d\n", &from, &destination);
                 } else {
                     enqueue(createRequest(from, destination), fakeLift->buffer);
-                    fprintf(fakeLift->out_sim_file,"--------------------------------------------\nNew Lift Request From Floor %d to Floor %d\nRequest No: %d\n--------------------------------------------\n\n",
-                    from, destination, linecount);
+                    fprintf(fakeLift->out_sim_file,"--------------------------------------------\nNew Lift Request From Floor %d to Floor %d\nRequest No: %d\nCurrent Buffer Count: %d\n--------------------------------------------\n\n",
+                    from, destination, linecount, fakeLift->buffer->list->size);
                     fscanfReturn = fscanf(file, "%d %d\n", &from, &destination);
                     linecount += 1;
                 }

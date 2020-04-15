@@ -26,14 +26,14 @@ int main(int argc, char** argv) {
             exit(EXIT_FAILURE);
         }
         if (*endptr != '\0')
-            printf("Further Digits were cut off from m as they couldnt be stored.");
+            printf("Only integers can be entered, decimal point has been cut off for buffer.\n");
         liftTime = strtol(argv[2], &endptr, 10);
         if (endptr == argv[2]) {
             fprintf(stderr, "No Digits were found for t.\n");
             exit(EXIT_FAILURE);
         }
         if (*endptr != '\0')
-            printf("Further Digits were cut off from t as they couldnt be stored.");
+            printf("Only integers can be entered, decimal point has been cut off for time.\n");
         if ((errno == ERANGE && (liftTime == LONG_MAX || liftTime == LONG_MIN)) || (errno != 0 && liftTime == 0)) {
             fprintf(stderr, "Invalid Number Entered for m: %s\n", argv[1]);
             exit(EXIT_FAILURE);
