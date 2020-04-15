@@ -3,17 +3,23 @@
 # Conditional Comp: None
 
 CC = gcc
-CFLAGS = -Wall -Werror -pedantic -ansi -fsanitize=thread -std=c89 -c
+CFLAGS = -Wall -Werror -pedantic -ansi -std=c89 -c
 EXEC = lift_sim_A
 OBJS = request.o program.o queue.o list.o lifts.o
+LINKERFLAGS = -pthread
+
 
 ifdef DEBUG
 CFLAGS += -D DEBUG -g # -g for valgrind
 DEBUG: clean $(EXEC)
 endif
 
+ifdef SANITIZE
+LINKERFLAGS += null
+endif
+
 $(EXEC) : $(OBJS)
-	$(CC) -pthread -fsanitize=thread $(OBJS) -o $(EXEC)
+	$(CC) $(LINKERFLAGS) $(OBJS) -o $(EXEC)
 
 lifts.o : lifts.c lifts.h
 	$(CC) $(CFLAGS) lifts.c

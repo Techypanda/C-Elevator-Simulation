@@ -76,5 +76,6 @@ void* requestt(void* args) {
     printf("Signaling Condition full in request END OF LINE!!.c\n");
     #endif
     pthread_cond_signal((&(myLift->full)));
+    fclose(file);
     return NULL;
 }
