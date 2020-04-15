@@ -12,10 +12,12 @@ request* createRequest(int inRequest, int inDestination) {
 }
 
 void* requestt(void* args) {
+    int linecount;
     FILE* file;
     liftStruct* fakeLift;
     int destination, from, fscanfReturn;
     file = fopen("sim_input", "r");
+    linecount = 1;
     fakeLift = (liftStruct*)args; /* This is not a actual lift */
     fscanfReturn = fscanf(file, "%d %d\n", &from, &destination);
     while (fscanfReturn != EOF) {
@@ -25,8 +27,27 @@ void* requestt(void* args) {
         #endif
         pthread_cond_wait(fakeLift->empty, fakeLift->mutexLock);
         while (fscanfReturn != EOF && (fakeLift->buffer->list->size != fakeLift->maxBufferSize)) {
-            enqueue(createRequest(from, destination), fakeLift->buffer);
-            fscanfReturn = fscanf(file, "%d %d\n", &from, &destination);
+            if (fscanfReturn != 2) {
+                printf("Line %d is invalid, program will now stop.\n", linecount);
+                *(fakeLift->finishedRead) = TRUE;
+                fclose(file);
+                pthread_mutex_unlock(fakeLift->mutexLock);
+                return NULL;
+            } else {
+                if (from < 1 || from > 20) {
+                    fprintf(stderr, "Line %d contained a number greater than 20 or less than 1 for the request floor, ignoring line.\n", linecount);
+                    linecount += 1;
+                    fscanfReturn = fscanf(file, "%d %d\n", &from, &destination);
+                } else if (destination < 1 || destination > 20) {
+                    fprintf(stderr, "Line %d contained a number greater than 20 or less than 1 for the destination floor, ignoring line.\n", linecount);
+                    linecount += 1;
+                    fscanfReturn = fscanf(file, "%d %d\n", &from, &destination);
+                } else {
+                    enqueue(createRequest(from, destination), fakeLift->buffer);
+                    fscanfReturn = fscanf(file, "%d %d\n", &from, &destination);
+                    linecount += 1;
+                }
+            }
         }
         pthread_mutex_unlock(fakeLift->mutexLock);
     }

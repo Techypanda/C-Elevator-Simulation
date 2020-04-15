@@ -7,12 +7,21 @@
 
 void* lift(void* args) {
     void* currentRequest;
-    int localFinishRead;
+    request* tempRequest;
+    int localFinishRead, localCount, sleepNeeded;
+    #ifndef NOTSLEEP
+    int localSleepTimer;
+    #endif
     liftStruct* thisLift = (liftStruct*)args;
     pthread_mutex_lock(thisLift->mutexLock);
     localFinishRead = *(thisLift->finishedRead);
+    localCount = thisLift->buffer->list->size;
+    #ifndef NOTSLEEP
+    localSleepTimer = thisLift->liftTimer;
+    #endif
     pthread_mutex_unlock(thisLift->mutexLock);
-    while (localFinishRead != TRUE) {
+    sleepNeeded = FALSE;
+    while (localFinishRead != TRUE || localCount != 0) {
         pthread_mutex_lock(thisLift->mutexLock);
         if (thisLift->buffer->list->size < 1 && *(thisLift->finishedRead) != TRUE) {
             #ifdef DEBUG
@@ -22,10 +31,27 @@ void* lift(void* args) {
         } else {
             currentRequest = dequeue(thisLift->buffer);
             if (currentRequest != NULL) {
-                printf("----LIFT %d----\nGoing from Floor %d to Floor %d\n--------------\n",
-                thisLift->liftNumber, ((request*)currentRequest)->requestFloor,
-                ((request*)currentRequest)->destinationFloor);
-                free(currentRequest);
+                if (thisLift->previousRequest == NULL) {
+                    fprintf(thisLift->out_sim_file,
+                        "Lift-%d Operation\nPrevious position: Floor 0 (I haven't done any elevators yet.)\nRequest: Floor %d to Floor %d\nDetail operations:\n    #movement for this request: %d\n    #request: %d\n    Total #movement: %d\nCurrent position: Floor %d\n\n",
+                        thisLift->liftNumber, ((request*)currentRequest)->requestFloor, ((request*)currentRequest)->destinationFloor, -1, -1, -1, ((request*)currentRequest)->requestFloor
+                    );
+                    thisLift->previousRequest = ((request*)currentRequest);
+                    #ifndef NOTSLEEP
+                    sleepNeeded = TRUE;
+                    #endif
+                } else {
+                    fprintf(thisLift->out_sim_file,
+                        "Lift-%d Operation\nPrevious position: Floor %d\nRequest: Floor %d to Floor %d\nDetail operations:\n    #movement for this request: %d\n    #request: %d\n    Total #movement: %d\nCurrent position: Floor %d\n\n",
+                        thisLift->liftNumber, thisLift->previousRequest->destinationFloor, ((request*)currentRequest)->requestFloor, ((request*)currentRequest)->destinationFloor, -1, -1, -1, ((request*)currentRequest)->requestFloor
+                    );
+                    tempRequest = thisLift->previousRequest;
+                    thisLift->previousRequest = ((request*)currentRequest);
+                    free(tempRequest);
+                    #ifndef NOTSLEEP
+                    sleepNeeded = TRUE;
+                    #endif
+                }
             } else {
                 #ifdef DEBUG
                 printf("\n!!!! RECIEVED A NULL ON THREAD %ld (AKA: LIFT %d)!!!!\n", pthread_self(), thisLift->liftNumber);
@@ -34,14 +60,22 @@ void* lift(void* args) {
             }
         }
         localFinishRead = *(thisLift->finishedRead);
+        localCount = thisLift->buffer->list->size;
         pthread_mutex_unlock(thisLift->mutexLock);
+        if (sleepNeeded == TRUE) {
+            #ifndef NOTSLEEP
+            sleepNeeded = FALSE;
+            sleep(localSleepTimer);
+            #endif
+        }
     }
+    free(thisLift->previousRequest);
     return NULL;
 }
 
 liftStruct* initLiftStruct(queue* inBuffer, int inTimer, int whatLift,
 pthread_mutex_t* inLock, pthread_cond_t* inFullCond, pthread_cond_t* inEmptyCond,
-int* inFinishedRead, int inMaxBufferSize) {
+int* inFinishedRead, int inMaxBufferSize, FILE* inFile) {
     liftStruct* newLiftStruct = (liftStruct*)malloc(sizeof(liftStruct));
     newLiftStruct->buffer = inBuffer;
     newLiftStruct->previousRequest = NULL;
@@ -52,6 +86,8 @@ int* inFinishedRead, int inMaxBufferSize) {
     newLiftStruct->full = inFullCond;
     newLiftStruct->empty = inEmptyCond;
     newLiftStruct->maxBufferSize = inMaxBufferSize;
+    newLiftStruct->out_sim_file = inFile;
+    /* Hopefully this file is verified cause otherwise big f**** rip */
     return newLiftStruct;
 }
 

@@ -9,6 +9,10 @@
 #include "lifts.h"
 
 int main(int argc, char** argv) {
+    /*
+        TODO: FILTER OUT NEGATIVES
+              FILTER OUT ZEROS.
+    */
     char* endptr;
     int bufferSize, liftTime;
     if (argc == 3) {
@@ -37,6 +41,14 @@ int main(int argc, char** argv) {
         #ifdef DEBUG
         printf("Reached with values m:%d and t:%d\n",bufferSize,liftTime);
         #endif
+        if (bufferSize <= 0) {
+            fprintf(stderr, "A Non-Zero Integer Number has to be input for bufferSize.\n");
+            exit(EXIT_FAILURE);
+        }
+        if (liftTime <= 0) {
+            fprintf(stderr, "A Non-Zero Integer Number has to be input for liftTime.\n");
+            exit(EXIT_FAILURE);
+        }
         beginSimulation(bufferSize, liftTime);
     } else {
         fprintf(stderr, "Invalid format entered!\nExpected: lift_sim_A m t\nm = buffer size\nt = time required by each lift\n");
@@ -46,6 +58,7 @@ int main(int argc, char** argv) {
 }
 
 void beginSimulation(int bufferSize, int liftTime) {
+    FILE* out_sim;
     liftStruct* liftZero, *liftOne, *liftTwo, *liftThree;
     pthread_mutexattr_t canShare;
     pthread_mutex_t liftLock;
@@ -53,19 +66,24 @@ void beginSimulation(int bufferSize, int liftTime) {
     pthread_t LiftR, Lift_1, Lift_2, Lift_3;
     int finishedRead = FALSE;
     queue* buffer = createQueue(bufferSize);
+    out_sim = fopen("out_sim", "w");
+    if (out_sim == NULL) {
+        fprintf(stderr, "Unable to write to a file called \"out_sim\".\n");
+        exit(EXIT_FAILURE);
+    }
     pthread_mutexattr_init(&canShare);
     pthread_mutexattr_setpshared(&canShare, PTHREAD_PROCESS_SHARED);
     pthread_mutex_init(&liftLock, &canShare);
     pthread_cond_init(&full, NULL);
     pthread_cond_init(&empty, NULL);
     liftZero = initLiftStruct(buffer, liftTime, 0, &liftLock, &full,
-    &empty, &finishedRead, bufferSize);
+    &empty, &finishedRead, bufferSize, out_sim);
     liftOne = initLiftStruct(buffer, liftTime, 1, &liftLock, &full,
-    &empty, &finishedRead, bufferSize);
+    &empty, &finishedRead, bufferSize, out_sim);
     liftTwo = initLiftStruct(buffer, liftTime, 2, &liftLock, &full,
-    &empty, &finishedRead, bufferSize);
+    &empty, &finishedRead, bufferSize, out_sim);
     liftThree = initLiftStruct(buffer, liftTime, 3, &liftLock, &full,
-    &empty, &finishedRead, bufferSize);
+    &empty, &finishedRead, bufferSize, out_sim);
     pthread_create(&Lift_1, NULL, &lift, liftOne);
     pthread_create(&Lift_2, NULL, &lift, liftTwo);
     pthread_create(&Lift_3, NULL, &lift, liftThree);
@@ -79,4 +97,5 @@ void beginSimulation(int bufferSize, int liftTime) {
     freeLiftStruct(liftTwo);
     freeLiftStruct(liftThree);
     freeQueue(buffer, free);
+    fclose(out_sim);
 }

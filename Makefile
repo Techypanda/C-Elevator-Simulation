@@ -17,6 +17,12 @@ endif
 ifdef SANITIZE
 LINKERFLAGS += -fsanitize=thread
 CFLAGS += -fsanitize=thread
+SANITIZE: clean $(EXEC)
+endif
+
+ifdef NOTSLEEP
+CFLAGS += -D NOTSLEEP
+NOTSLEEP: clean $(EXEC)
 endif
 
 $(EXEC) : $(OBJS)
