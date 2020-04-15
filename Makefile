@@ -15,7 +15,8 @@ DEBUG: clean $(EXEC)
 endif
 
 ifdef SANITIZE
-LINKERFLAGS += null
+LINKERFLAGS += -fsanitize=thread
+CFLAGS += -fsanitize=thread
 endif
 
 $(EXEC) : $(OBJS)

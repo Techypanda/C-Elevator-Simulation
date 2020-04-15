@@ -1,64 +1,60 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>
+#include "queue.h"
 #include "lifts.h"
 #include "request.h"
 
 void* lift(void* args) {
-    request* currentRequest;
-    liftStruct* myLift = (liftStruct*)args;
-    pthread_mutex_lock(&(myLift->mutexLock));
-    while ((*(myLift->finishedRead)) == 0) {
-        #ifdef DEBUG
-        printf("THREAD %ld: Waiting On Condition full in lifts.c\n", pthread_self());
-        #endif
-        pthread_cond_wait((&(myLift->full)), &(myLift->mutexLock));
-        while ((*(myLift->countSemaphore)) > 0) {
-            (*(myLift->countSemaphore)) -= 1;
-            (*(myLift->remainingSemaphore)) += 1;
-            currentRequest = dequeue(myLift->buffer);
-            printf("Going from Floor %d to Floor %d\n", currentRequest->requestFloor, currentRequest->destinationFloor);
-            free(currentRequest);
+    void* currentRequest;
+    int localFinishRead;
+    liftStruct* thisLift = (liftStruct*)args;
+    pthread_mutex_lock(thisLift->mutexLock);
+    localFinishRead = *(thisLift->finishedRead);
+    pthread_mutex_unlock(thisLift->mutexLock);
+    while (localFinishRead != TRUE) {
+        pthread_mutex_lock(thisLift->mutexLock);
+        if (thisLift->buffer->list->size < 1 && *(thisLift->finishedRead) != TRUE) {
+            #ifdef DEBUG
+            printf("THREAD %ld (AKA: LIFT %d): Signaling condition empty in lifts.c (localFinishedRead = %d)\n", pthread_self(), thisLift->liftNumber, localFinishRead);
+            #endif
+            pthread_cond_signal(thisLift->empty);
+        } else {
+            currentRequest = dequeue(thisLift->buffer);
+            if (currentRequest != NULL) {
+                printf("----LIFT %d----\nGoing from Floor %d to Floor %d\n--------------\n",
+                thisLift->liftNumber, ((request*)currentRequest)->requestFloor,
+                ((request*)currentRequest)->destinationFloor);
+                free(currentRequest);
+            } else {
+                #ifdef DEBUG
+                printf("\n!!!! RECIEVED A NULL ON THREAD %ld (AKA: LIFT %d)!!!!\n", pthread_self(), thisLift->liftNumber);
+                #endif
+                /* This occurs once at the end and doesnt happen again as it hasnt updated localFinishRead. */
+            }
         }
-        #ifdef DEBUG
-        printf("THREAD %ld: Signaling condition empty in lifts.c\n", pthread_self());
-        #endif
-        pthread_cond_signal(&(myLift->empty));
+        localFinishRead = *(thisLift->finishedRead);
+        pthread_mutex_unlock(thisLift->mutexLock);
     }
-    pthread_mutex_unlock(&(myLift->mutexLock));
-    #ifdef DEBUG
-    printf("THREAD: %ld HAS FINISHED\n", pthread_self());
-    #endif
-    pthread_cond_signal(&(myLift->full));
     return NULL;
 }
 
-liftStruct* initLiftStruct(queue* inBuffer, int inRemaining, int inCount, int inTime,
-pthread_t* inFirst, pthread_t* inSecond, pthread_t* inThird) {
-    pthread_mutexattr_t canShare;
-    liftStruct* myData = (liftStruct*)malloc(sizeof(liftStruct));
-    myData->buffer = inBuffer;
-    myData->remainingSemaphore = (int*)malloc(sizeof(int));
-    myData->finishedRead = (int*)malloc(sizeof(int));
-    myData->countSemaphore = (int*)malloc(sizeof(int));
-    *(myData->remainingSemaphore) = inRemaining;
-    *(myData->finishedRead) = 0;
-    *(myData->countSemaphore) = inCount;
-    myData->liftTimer = inTime;
-    myData->FirstThread = inFirst;
-    myData->SecondThread = inSecond;
-    myData->ThirdThread = inThird;
-    pthread_mutexattr_init(&canShare);
-    pthread_mutexattr_setpshared(&canShare, PTHREAD_PROCESS_SHARED);
-    pthread_mutex_init(&(myData->mutexLock), &canShare);
-    pthread_cond_init(&(myData->full), NULL);
-    pthread_cond_init(&(myData->empty), NULL);
-    return myData;
+liftStruct* initLiftStruct(queue* inBuffer, int inTimer, int whatLift,
+pthread_mutex_t* inLock, pthread_cond_t* inFullCond, pthread_cond_t* inEmptyCond,
+int* inFinishedRead, int inMaxBufferSize) {
+    liftStruct* newLiftStruct = (liftStruct*)malloc(sizeof(liftStruct));
+    newLiftStruct->buffer = inBuffer;
+    newLiftStruct->previousRequest = NULL;
+    newLiftStruct->finishedRead = inFinishedRead;
+    newLiftStruct->liftTimer = inTimer;
+    newLiftStruct->liftNumber = whatLift;
+    newLiftStruct->mutexLock = inLock;
+    newLiftStruct->full = inFullCond;
+    newLiftStruct->empty = inEmptyCond;
+    newLiftStruct->maxBufferSize = inMaxBufferSize;
+    return newLiftStruct;
 }
 
 void freeLiftStruct(liftStruct* toFree) {
-    free(toFree->finishedRead);
-    free(toFree->remainingSemaphore);
-    free(toFree->countSemaphore);
     free(toFree);
 }

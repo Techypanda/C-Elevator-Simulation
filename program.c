@@ -46,19 +46,37 @@ int main(int argc, char** argv) {
 }
 
 void beginSimulation(int bufferSize, int liftTime) {
-    pthread_t LiftR;
-    pthread_t Lift_1, Lift_2, Lift_3;
+    liftStruct* liftZero, *liftOne, *liftTwo, *liftThree;
+    pthread_mutexattr_t canShare;
+    pthread_mutex_t liftLock;
+    pthread_cond_t full, empty;
+    pthread_t LiftR, Lift_1, Lift_2, Lift_3;
+    int finishedRead = FALSE;
     queue* buffer = createQueue(bufferSize);
-    liftStruct* myLifts = initLiftStruct(buffer, bufferSize, 0, liftTime, &LiftR,
-    &LiftR, &LiftR);
-    pthread_create(&Lift_1, NULL, &lift, myLifts);
-    pthread_create(&Lift_2, NULL, &lift, myLifts);
-    pthread_create(&Lift_3, NULL, &lift, myLifts);
-    pthread_create(&LiftR, NULL, &requestt, myLifts);
+    pthread_mutexattr_init(&canShare);
+    pthread_mutexattr_setpshared(&canShare, PTHREAD_PROCESS_SHARED);
+    pthread_mutex_init(&liftLock, &canShare);
+    pthread_cond_init(&full, NULL);
+    pthread_cond_init(&empty, NULL);
+    liftZero = initLiftStruct(buffer, liftTime, 0, &liftLock, &full,
+    &empty, &finishedRead, bufferSize);
+    liftOne = initLiftStruct(buffer, liftTime, 1, &liftLock, &full,
+    &empty, &finishedRead, bufferSize);
+    liftTwo = initLiftStruct(buffer, liftTime, 2, &liftLock, &full,
+    &empty, &finishedRead, bufferSize);
+    liftThree = initLiftStruct(buffer, liftTime, 3, &liftLock, &full,
+    &empty, &finishedRead, bufferSize);
+    pthread_create(&Lift_1, NULL, &lift, liftOne);
+    pthread_create(&Lift_2, NULL, &lift, liftTwo);
+    pthread_create(&Lift_3, NULL, &lift, liftThree);
+    pthread_create(&LiftR, NULL, &requestt, liftZero);
     pthread_join(LiftR, NULL);
     pthread_join(Lift_1, NULL);
     pthread_join(Lift_2, NULL);
     pthread_join(Lift_3, NULL);
+    freeLiftStruct(liftZero);
+    freeLiftStruct(liftOne);
+    freeLiftStruct(liftTwo);
+    freeLiftStruct(liftThree);
     freeQueue(buffer, free);
-    freeLiftStruct(myLifts);
 }
