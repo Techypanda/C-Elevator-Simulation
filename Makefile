@@ -13,7 +13,7 @@ CFLAGS += -D DEBUG -g # -g for valgrind
 DEBUG: clean $(EXEC)
 endif
 
-ifdef SANITIZE
+ifdef SANITIZETHREAD
 LINKERFLAGS += -fsanitize=thread
 CFLAGS += -fsanitize=thread
 SANITIZE: clean $(EXEC)

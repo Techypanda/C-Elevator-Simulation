@@ -16,8 +16,9 @@ typedef struct processLift {
     int liftTimer;
     int liftNumber;
     int maxBufferSize;
-    FILE** out_sim_file;
-    sem_t* semaphoreFull;
-    sem_t* semaphoreEmpty;
+    FILE*** out_sim_file;
+    sem_t** semaphoreFull;
+    sem_t** semaphoreEmpty;
+    sem_t** fileSem;
 } processLift;
 #endif

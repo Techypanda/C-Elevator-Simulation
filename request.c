@@ -36,7 +36,7 @@ void* requestt(void* args) {
         pthread_cond_wait(fakeLift->empty, fakeLift->mutexLock);
         while (fscanfReturn != EOF && (fakeLift->buffer->list->size != fakeLift->maxBufferSize)) {
             if (fscanfReturn != 2) {
-                printf("Line %d is invalid, program will now stop.\n", linecount);
+                printf("A Line contains invalid amount of values, program will now stop.\n");
                 *(fakeLift->finishedRead) = TRUE;
                 fclose(file);
                 pthread_mutex_unlock(fakeLift->mutexLock);
@@ -68,43 +68,69 @@ void* requestt(void* args) {
     return NULL;
 }
 
+/*
+sem_getvalue( *((*liftZero)->semaphoreFull), &tester);
+printf("SEM VALUE: %d\n", tester);
+int tester;
+*/
 void processRequest(void* args) {
+    #ifdef DEBUG
+    int tester;
+    #endif
     processLift** liftZero;
-    int linecount;
     FILE* file;
-    int destination, from, fscanfReturn;
+    int destination, from, fscanfReturn, linecount;
     liftZero = (processLift**)args;
     file = fopen("sim_input", "r");
     linecount = 1;
     fscanfReturn = fscanf(file, "%d %d\n", &from, &destination);
-    while (fscanfReturn != EOF) {
-        sem_wait((*liftZero)->semaphoreEmpty);
-        while (fscanfReturn != EOF && (*((*liftZero)->buffer))->size != (*liftZero)->maxBufferSize) {
-            if (fscanfReturn != 2) {
-                printf("Line %d is invalid, program will now stop.\n", linecount);
-                *(*((*liftZero)->finishedRead)) = TRUE;
-                fclose(file);
-                exit(-1);
+    while (fscanfReturn != EOF)
+    {
+        #ifdef DEBUG
+        sem_getvalue( *((*liftZero)->semaphoreEmpty), &tester);
+        printf("EMPTY SEM VALUE BEFORE: %d\n", tester);
+        #endif
+        sem_wait(*((*liftZero)->semaphoreEmpty));
+        #ifdef DEBUG
+        sem_getvalue( *((*liftZero)->semaphoreEmpty), &tester);
+        printf("SEM VALUE AFTER: %d\n", tester);
+        #endif
+        if (fscanfReturn != 2) {
+            printf("A Line contains too many values or an invalid character, program will now stop.\n");
+            **((*liftZero)->finishedRead) = TRUE;
+            fclose(file);
+            exit(EXIT_FAILURE);
+        } else {
+            if (from < 1 || from > 20) {
+                fprintf(stderr, "Line %d contained a number greater than 20 or less than 1 for the request floor, ignoring line.\n", linecount);
+                linecount += 1;
+                fscanfReturn = fscanf(file, "%d %d\n", &from, &destination);
+                sem_post(*((*liftZero)->semaphoreEmpty));
+            } else if (destination < 1 || destination > 20) {
+                fprintf(stderr, "Line %d contained a number greater than 20 or less than 1 for the destination floor, ignoring line.\n", linecount);
+                linecount += 1;
+                fscanfReturn = fscanf(file, "%d %d\n", &from, &destination);
+                sem_post(*((*liftZero)->semaphoreEmpty));
             } else {
-                if (from < 1 || from > 20) {
-                    fprintf(stderr, "Line %d contained a number greater than 20 or less than 1 for the request floor, ignoring line.\n", linecount);
-                    linecount += 1;
-                    fscanfReturn = fscanf(file, "%d %d\n", &from, &destination);
-                } else if (destination < 1 || destination > 20) {
-                    fprintf(stderr, "Line %d contained a number greater than 20 or less than 1 for the destination floor, ignoring line.\n", linecount);
-                    linecount += 1;
-                    fscanfReturn = fscanf(file, "%d %d\n", &from, &destination);
-                } else {
-                    arrayEnqueue(*createRequest(from, destination), (*liftZero)->buffer);
-                    fprintf( *((*liftZero)->out_sim_file),"--------------------------------------------\nNew Lift Request From Floor %d to Floor %d\nRequest No: %d\nCurrent Buffer Count: %d\n--------------------------------------------\n\n",
-                    from, destination, linecount, (*((*liftZero)->buffer))->size);
-                    fscanfReturn = fscanf(file, "%d %d\n", &from, &destination);
-                    linecount += 1;
-                }
+                arrayEnqueue(*createRequest(from, destination), (*liftZero)->buffer);
+                sem_wait(*((*liftZero)->fileSem));
+                fprintf((**((*liftZero)->out_sim_file)),"--------------------------------------------\nNew Lift Request From Floor %d to Floor %d\nRequest No: %d\nCurrent Buffer Count: %d\n--------------------------------------------\n\n",
+                from, destination, linecount, (*(*liftZero)->buffer)->size);
+                sem_post(*((*liftZero)->fileSem));
+                fscanfReturn = fscanf(file, "%d %d\n", &from, &destination);
+                linecount += 1;
+                #ifdef DEBUG
+                sem_getvalue( *((*liftZero)->semaphoreFull), &tester);
+                printf("FULL SEM VALUE BEFORE: %d\n", tester);
+                #endif
+                sem_post(*((*liftZero)->semaphoreFull));
+                #ifdef DEBUG
+                sem_getvalue( *((*liftZero)->semaphoreFull), &tester);
+                printf("FULL SEM VALUE AFTER: %d\n", tester);
+                #endif /* VERIFICATION NEEDED */
             }
         }
-        sem_post((*liftZero)->semaphoreEmpty);
     }
-
+    **((*liftZero)->finishedRead) = TRUE;
     fclose(file);
 }

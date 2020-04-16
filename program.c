@@ -178,7 +178,7 @@ void beginSimulation(int bufferSize, int liftTime) {
 #ifdef PROCESS
 void beginSimulation(int bufferSize, int liftTime) {
     /*int totalMovements = 0, totalRequests = 0;*/
-    processLift /**liftOne, *liftTwo, *liftThree,*/ *liftZero;
+    processLift *liftOne, *liftTwo, *liftThree,  *liftZero;
     pid_t mainProcess, LiftR, Lift_1, Lift_2, Lift_3;
     arrayQueue* reqQueue;
     request* requestBuffer = (request*)mmap(NULL,sizeof(request) * bufferSize,PROT_READ|PROT_WRITE,MAP_SHARED|MAP_ANON,-1,0);
@@ -186,12 +186,15 @@ void beginSimulation(int bufferSize, int liftTime) {
     FILE** out_sim_file = (FILE**)mmap(NULL,sizeof(FILE*),PROT_READ|PROT_WRITE,MAP_SHARED|MAP_ANON,-1,0);
     sem_t* fullSem = (sem_t*)mmap(NULL,sizeof(sem_t),PROT_READ|PROT_WRITE,MAP_SHARED|MAP_ANON,-1,0);
     sem_t* emptySem = (sem_t*)mmap(NULL,sizeof(sem_t),PROT_READ|PROT_WRITE,MAP_SHARED|MAP_ANON,-1,0);
-    sem_init(emptySem, 5, 0);
-    sem_init(fullSem, 5, 8);
-    /*liftOne = createProcessLift(&reqQueue, &readDone, liftTime, 1, bufferSize, out_sim_file, fullSem, emptySem);
-    liftTwo = createProcessLift(&reqQueue, &readDone, liftTime, 2, bufferSize, out_sim_file, fullSem, emptySem);
-    liftThree = createProcessLift(&reqQueue, &readDone, liftTime, 3, bufferSize, out_sim_file, fullSem, emptySem);*/
-    liftZero = createProcessLift(&reqQueue, &readDone, liftTime, 0, bufferSize, out_sim_file, fullSem, emptySem);
+    sem_t* fileSem = (sem_t*)mmap(NULL,sizeof(sem_t),PROT_READ|PROT_WRITE,MAP_SHARED|MAP_ANON,-1,0);
+    sem_init(emptySem, 5, bufferSize);
+    sem_init(fullSem, 5, 0);
+    sem_init(fileSem, 5, 1);
+
+    liftOne = createProcessLift(&reqQueue, &readDone, liftTime, 1, bufferSize, &out_sim_file, &fullSem, &emptySem, &fileSem);
+    liftTwo = createProcessLift(&reqQueue, &readDone, liftTime, 2, bufferSize, &out_sim_file, &fullSem, &emptySem, &fileSem);
+    liftThree = createProcessLift(&reqQueue, &readDone, liftTime, 3, bufferSize, &out_sim_file, &fullSem, &emptySem, &fileSem);
+    liftZero = createProcessLift(&reqQueue, &readDone, liftTime, 0, bufferSize, &out_sim_file, &fullSem, &emptySem, &fileSem);
     *out_sim_file = fopen("out_sim", "w");
     *readDone = 0;
     if (*out_sim_file == NULL) {
@@ -210,13 +213,14 @@ void beginSimulation(int bufferSize, int liftTime) {
         Lift_3 = fork();
 
     if (LiftR == 0) {
-        processRequest(liftZero);
+        printf("REACHED\n");
+        processRequest(&liftZero);
     } else if (Lift_1 == 0) {
-
+        liftProcess(&liftOne);
     } else if (Lift_2 == 0) {
-
+        liftProcess(&liftTwo);
     } else if (Lift_3 == 0) {
-
+        liftProcess(&liftThree);
     } else {
         waitpid(LiftR, NULL, 0);
         waitpid(Lift_1, NULL, 0);
