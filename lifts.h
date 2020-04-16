@@ -1,12 +1,14 @@
-#include <pthread.h>
-#include <stdio.h>
-#include "queue.h"
-#include "request.h"
 #ifndef LIFTS_H
 #define LIFTS_H
 #define TRUE 1
 #define FALSE 0
 #define CALCDISTANCE(a,b,c,d) ((a - b) + (c - d))
+#include <pthread.h>
+#include <stdio.h>
+#include <semaphore.h>
+#include "queue.h"
+#include "request.h"
+#include "processLift.h"
 typedef struct liftStruct { /* Lift One */
     queue* buffer;
     request* previousRequest;
@@ -25,4 +27,6 @@ pthread_mutex_t* inLock, pthread_cond_t* inFullCond, pthread_cond_t* inEmptyCond
 int* inFinishedRead, int inMaxBufferSize, FILE* inFile);
 void freeLiftStruct(liftStruct* toFree);
 void* lift(void* args);
+processLift* createProcessLift(arrayQueue** inBuffer, int** inFinishedRead, int inTimer,
+int inNumber, int myCapacity, FILE** inFile, sem_t* inFullSem, sem_t* inEmptySem);
 #endif

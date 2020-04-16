@@ -98,11 +98,28 @@ int* inFinishedRead, int inMaxBufferSize, FILE* inFile) {
     newLiftStruct->liftReturnVals = (int*)malloc(sizeof(int) * 2);
     *((newLiftStruct->liftReturnVals) + 0) = 0;
     *((newLiftStruct->liftReturnVals) + 1) = 0;
-    /* Hopefully this file is verified cause otherwise big f**** rip */
     return newLiftStruct;
 }
 
 void freeLiftStruct(liftStruct* toFree) {
     free(toFree->liftReturnVals);
     free(toFree);
+}
+
+processLift* createProcessLift(arrayQueue** inBuffer, int** inFinishedRead, int inTimer,
+int inNumber, int myCapacity, FILE** inFile, sem_t* inFullSem, sem_t* inEmptySem) {
+    request nullValue;
+    processLift* myLift = (processLift*)malloc(sizeof(processLift));
+    nullValue.requestFloor = -1; nullValue.destinationFloor = -1;
+    myLift->buffer = inBuffer;
+    myLift->previousRequest = nullValue;
+    myLift->finishedRead = inFinishedRead;
+    myLift->liftReturnVals = -1;
+    myLift->liftTimer = inTimer;
+    myLift->liftNumber = inNumber;
+    myLift->maxBufferSize = myCapacity;
+    myLift->out_sim_file = inFile;
+    myLift->semaphoreFull = inFullSem;
+    myLift->semaphoreEmpty = inEmptySem;
+    return myLift;
 }

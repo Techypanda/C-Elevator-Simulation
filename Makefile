@@ -3,11 +3,10 @@
 # Conditional Comp: None
 
 CC = gcc
-CFLAGS = -Wall -Werror -pedantic -ansi -std=c89 -c
+CFLAGS = -Wall -Werror -pedantic -ansi -std=c89 -D _DEFAULT_SOURCE -lrt -pthread -c
 EXEC = lift_sim_A
 OBJS = request.o program.o queue.o list.o lifts.o
-LINKERFLAGS = -pthread
-
+LINKERFLAGS = -pthread -lrt -D _DEFAULT_SOURCE
 
 ifdef DEBUG
 CFLAGS += -D DEBUG -g # -g for valgrind
@@ -25,6 +24,11 @@ CFLAGS += -D NOTSLEEP
 NOTSLEEP: clean $(EXEC)
 endif
 
+ifdef PROCESS
+CFLAGS += -D PROCESS
+PROCESS: clean $(EXEC)
+endif
+
 $(EXEC) : $(OBJS)
 	$(CC) $(LINKERFLAGS) $(OBJS) -o $(EXEC)
 
@@ -37,20 +41,32 @@ program.o : program.c program.h
 request.o : request.c request.h
 	$(CC) $(CFLAGS) request.c
 
-queue.o : queue.c queue.h
-	$(CC) $(CFLAGS) queue.c
-
 list.o : list.c list.h
 	$(CC) $(CFLAGS) list.c
+
+sharedBuffer.o : sharedBuffer.c sharedBuffer.h
+	$(CC) $(CFLAGS) sharedBuffer.c
 
 queueTestHarness.o : queueTestHarness.c
 	$(CC) $(CFLAGS) queueTestHarness.c
 
+sharedlist.o : sharedlist.c sharedlist.h
+	$(CC) $(CFLAGS) sharedlist.c
+
+listTest.o : listTest.c
+	$(CC) $(CFLAGS) listTest.c
+
 update :
 	git pull origin master
 
+queue.o : queue.c queue.h
+	$(CC) $(CFLAGS) queue.c
+
 queueTest : list.o queue.o queueTestHarness.o
 	$(CC) list.o queue.o queueTestHarness.o -o queueTest
+
+sharedTest : sharedlist.o listTest.o
+	$(CC) sharedlist.o listTest.o -o sharedTest
 
 siminputgenerator.class : siminputgenerator.java
 	javac siminputgenerator.java

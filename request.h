@@ -5,5 +5,7 @@ typedef struct request {
     int destinationFloor;
 } request;
 request* createRequest(int inRequest, int inDestination);
+request* createSharedRequest(int inRequest, int inDestination);
 void* requestt(void* args);
+void processRequest(void* args);
 #endif
