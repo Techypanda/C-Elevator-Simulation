@@ -1,7 +1,8 @@
+################################################################################
 # Author: Jonathan Wright
 # Date: 7/04/2020
-# Conditional Comp: None
-
+# Conditional Comp: DEBUG, SANITIZETHREAD, NOTSLEEP, OUTSIMASSTDOUT, PROCESS, PTHREAD
+################################################################################
 CC = gcc
 CFLAGS = -Wall -Werror -pedantic -ansi -std=c89 -D _DEFAULT_SOURCE -lrt -pthread -c
 EXEC = lift_sim_A
