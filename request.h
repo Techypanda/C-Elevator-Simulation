@@ -1,5 +1,10 @@
 #ifndef REQUEST_H
 #define REQUEST_H
+/*******************************************************************************
+*   PURPOSE: Struct for holding details about requests.
+*   DATE: 17/04/2020 - 9:20PM
+*   AUTHOR: Jonathan Wright
+*******************************************************************************/
 typedef struct request {
     int requestFloor;
     int destinationFloor;

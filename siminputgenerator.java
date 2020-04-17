@@ -3,7 +3,11 @@
 */
 import java.util.Random;
 import java.io.*;
-
+/*******************************************************************************
+*   PURPOSE: NOT TO BE ASSESSED: This will simply generate a sim_input file.
+*   DATE: 17/04/2020 - 9:20PM
+*   AUTHOR: Jonathan Wright
+*******************************************************************************/
 public class siminputgenerator {
     public static void main(String[] args) {
         FileOutputStream out;

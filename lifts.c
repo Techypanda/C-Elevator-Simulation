@@ -6,6 +6,21 @@
 #include "lifts.h"
 #include "request.h"
 
+/*******************************************************************************
+*   PURPOSE OF C FILE: Provides Implementation of how the lifts will work.
+*   DATE: 17/04/2020 - 9:20PM
+*   AUTHOR: Jonathan Wright
+*******************************************************************************/
+/*******************************************************************************
+*   PURPOSE: This method is the PThread function for the actual lifts going up/down,
+*   it takes in a struct which points at memory such as mutexLock which allows it
+*   to avoid race conditions.
+*   IMPORTS: liftStruct* lift (fed in as a void* due to being a pthread.)
+*   EXPORTS: NULL, (the lift's actual returns (request # and movement is done
+*   in a array contained in the struct.))
+*   DATE: 17/04/2020 - 9:20PM
+*   AUTHOR: Jonathan Wright
+*******************************************************************************/
 void* lift(void* args) {
     void* currentRequest;
     request* tempRequest;
@@ -82,6 +97,15 @@ void* lift(void* args) {
     return NULL;
 }
 
+/*******************************************************************************
+*   PURPOSE: This is the process implementation of the actual lifts going up and
+*   down, this uses semaphores fed in through a struct.
+*   IMPORTS: processLift** thisLift (fed in as void* args because I originally
+*   thought that processes ran functions the same way pthreads did.)
+*   EXPORTS: NULL (Exports again happen through a array contained in the struct.)
+*   DATE: 17/04/2020 - 9:20PM
+*   AUTHOR: Jonathan Wright
+*******************************************************************************/
 void liftProcess(void* args) {
     struct timespec tims;
     #ifdef DEBUG
@@ -175,7 +199,15 @@ void liftProcess(void* args) {
     }
 }
 
-
+/*******************************************************************************
+*   PURPOSE: This initializes the struct used by lifts in the pthreads implementation
+*   IMPORTS: queue* inBuffer, int inTimer, int whatLift, pthread_mutex_t* inLock
+*   pthread_cond_t* inFullCond, pthread_cond_t* inEmptyCond,
+*   int* inFinishedRead, int inMaxBufferSize, FILE* inFile
+*   EXPORTS: liftStruct* newLiftStruct
+*   DATE: 17/04/2020 - 9:20PM
+*   AUTHOR: Jonathan Wright
+*******************************************************************************/
 liftStruct* initLiftStruct(queue* inBuffer, int inTimer, int whatLift,
 pthread_mutex_t* inLock, pthread_cond_t* inFullCond, pthread_cond_t* inEmptyCond,
 int* inFinishedRead, int inMaxBufferSize, FILE* inFile) {
@@ -196,11 +228,27 @@ int* inFinishedRead, int inMaxBufferSize, FILE* inFile) {
     return newLiftStruct;
 }
 
+/*******************************************************************************
+*   PURPOSE: Will free the memory allocated for a liftStruct.
+*   IMPORTS: liftStruct* toFree
+*   EXPORTS: None
+*   DATE: 17/04/2020 - 9:20PM
+*   AUTHOR: Jonathan Wright
+*******************************************************************************/
 void freeLiftStruct(liftStruct* toFree) {
     free(toFree->liftReturnVals);
     free(toFree);
 }
 
+/*******************************************************************************
+*   PURPOSE: Will create a lift for the process implementation.
+*   IMPORTS: arrayQueue** inBuffer, int** inFinishedRead, int inTimer,
+*   int inNumber, int myCapacity, FILE*** inFile, sem_t** inFullSem, sem_t** inEmptySem,
+*   sem_t** inFileSem, sem_t** inRequestFileSem, int** inReturnAddress
+*   EXPORTS: processLift* myLift
+*   DATE: 17/04/2020 - 9:20PM
+*   AUTHOR: Jonathan Wright
+*******************************************************************************/
 processLift* createProcessLift(arrayQueue** inBuffer, int** inFinishedRead, int inTimer,
 int inNumber, int myCapacity, FILE*** inFile, sem_t** inFullSem, sem_t** inEmptySem,
 sem_t** inFileSem, sem_t** inRequestFileSem, int** inReturnAddress) {

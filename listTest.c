@@ -15,7 +15,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
 #include "sharedlist.h"
 
 int main(int argc, char const *argv[])

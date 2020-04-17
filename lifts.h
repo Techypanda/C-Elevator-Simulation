@@ -1,4 +1,4 @@
-#ifndef LIFTS_H
+ #ifndef LIFTS_H
 #define LIFTS_H
 #define TRUE 1
 #define FALSE 0
@@ -9,6 +9,11 @@
 #include "queue.h"
 #include "request.h"
 #include "processLift.h"
+/*******************************************************************************
+*   PURPOSE: This is the struct for each lift in the PThread implementation
+*   DATE: 17/04/2020 - 9:20PM
+*   AUTHOR: Jonathan Wright
+*******************************************************************************/
 typedef struct liftStruct { /* Lift One */
     queue* buffer;
     request* previousRequest;

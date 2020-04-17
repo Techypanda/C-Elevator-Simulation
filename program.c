@@ -19,6 +19,13 @@
 #include "request.h"
 #include "list.h"
 
+/*******************************************************************************
+*   PURPOSE: Starting point for program.
+*   IMPORTS: int argc, char** argv
+*   EXPORTS: int errorStatus
+*   DATE: 17/04/2020 - 9:20PM
+*   AUTHOR: Jonathan Wright
+*******************************************************************************/
 int main(int argc, char** argv) {
     /*
         TODO: FILTER OUT NEGATIVES
@@ -68,6 +75,13 @@ int main(int argc, char** argv) {
     return(0);
 }
 
+/*******************************************************************************
+*   PURPOSE: PThread based implementation of the simulation
+*   IMPORTS: int bufferSize, int liftTime
+*   EXPORTS: none
+*   DATE: 17/04/2020 - 9:20PM
+*   AUTHOR: Jonathan Wright
+*******************************************************************************/
 #ifdef PTHREAD
 void beginSimulation(int bufferSize, int liftTime) {
     int totalMovements = 0, totalRequests = 0;
@@ -121,6 +135,14 @@ void beginSimulation(int bufferSize, int liftTime) {
 }
 #endif
 
+/*******************************************************************************
+*   PURPOSE: PThread based implementation selected when PTHREAD and PROCESS not
+*   defined.
+*   IMPORTS: int BufferSize, int liftTime
+*   EXPORTS: none
+*   DATE: 17/04/2020 - 9:20PM
+*   AUTHOR: Jonathan Wright
+*******************************************************************************/
 #if !defined(PTHREAD) && !defined(PROCESS)
 void beginSimulation(int bufferSize, int liftTime) {
     int totalMovements = 0, totalRequests = 0;
@@ -175,6 +197,13 @@ void beginSimulation(int bufferSize, int liftTime) {
 }
 #endif
 
+/*******************************************************************************
+*   PURPOSE: Process implementation for simulation
+*   IMPORTS: int bufferSize, int liftTime
+*   EXPORTS: none
+*   DATE: 17/04/2020 - 9:20PM
+*   AUTHOR: Jonathan Wright
+*******************************************************************************/
 #ifdef PROCESS
 void beginSimulation(int bufferSize, int liftTime) {
     /*int totalMovements = 0, totalRequests = 0;*/

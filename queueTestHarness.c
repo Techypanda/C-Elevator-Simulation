@@ -1,3 +1,10 @@
+/*******************************************************************************
+*   PURPOSE: Tests my queue for memory leaks.
+*   IMPORTS: none
+*   EXPORTS: none
+*   DATE: 17/04/2020 - 9:20PM
+*   AUTHOR: Jonathan Wright
+*******************************************************************************/
 #include "queue.h"
 #include <stdio.h>
 #include <stdlib.h>

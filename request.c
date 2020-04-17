@@ -4,28 +4,59 @@
 #include <sys/mman.h>
 #include "request.h"
 #include "lifts.h"
+/*******************************************************************************
+*   PURPOSE: This C File contains definitions to do with requests aswell as the
+*   implmentation of the request elevators.
+*   DATE: 17/04/2020 - 9:20PM
+*   AUTHOR: Jonathan Wright
+*******************************************************************************/
 
+/*******************************************************************************
+*   PURPOSE: creates a request on the heap.
+*   IMPORTS: int inRequest, int inDestination
+*   EXPORTS: request* outRequest
+*   DATE: 17/04/2020 - 9:20PM
+*   AUTHOR: Jonathan Wright
+*******************************************************************************/
 request* createRequest(int inRequest, int inDestination) {
     request* newRequest = malloc(sizeof(request));
     newRequest->requestFloor = inRequest;
     newRequest->destinationFloor = inDestination;
     return newRequest;
 }
-
+/*******************************************************************************
+*   PURPOSE: creates a request on the stack.
+*   IMPORTS: int inRequest, int inDestination
+*   EXPORTS: request outRequest
+*   DATE: 17/04/2020 - 9:20PM
+*   AUTHOR: Jonathan Wright
+*******************************************************************************/
 request createStackRequest(int inRequest, int inDestination) {
     request newRequest;
     newRequest.requestFloor = inRequest;
     newRequest.destinationFloor = inDestination;
     return newRequest;
 }
-
+/*******************************************************************************
+*   PURPOSE: creates a request on the shared memory.
+*   IMPORTS: int inRequest, int inDestination
+*   EXPORTS: request* outRequest
+*   DATE: 17/04/2020 - 9:20PM
+*   AUTHOR: Jonathan Wright
+*******************************************************************************/
 request* createSharedRequest(int inRequest, int inDestination) {
     request* newRequest = (request*)mmap(NULL,sizeof(request),PROT_READ|PROT_WRITE,MAP_SHARED|MAP_ANON,-1,0);
     newRequest->requestFloor = inRequest;
     newRequest->destinationFloor = inDestination;
     return newRequest;
 }
-
+/*******************************************************************************
+*   PURPOSE: Lift 1-3 PTHREAD implementation.
+*   IMPORTS: void* args
+*   EXPORTS: NULL
+*   DATE: 17/04/2020 - 9:20PM
+*   AUTHOR: Jonathan Wright
+*******************************************************************************/
 void* requestt(void* args) {
     int linecount;
     FILE* file;
@@ -75,11 +106,13 @@ void* requestt(void* args) {
     return NULL;
 }
 
-/*
-sem_getvalue( *((*liftZero)->semaphoreFull), &tester);
-printf("SEM VALUE: %d\n", tester);
-int tester;
-*/
+/*******************************************************************************
+*   PURPOSE: Lift 1-3 Process Implementation.
+*   IMPORTS: void* args
+*   EXPORTS: none
+*   DATE: 17/04/2020 - 9:20PM
+*   AUTHOR: Jonathan Wright
+*******************************************************************************/
 void processRequest(void* args) {
     #ifdef DEBUG
     int tester;

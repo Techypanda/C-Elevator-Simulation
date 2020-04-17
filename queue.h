@@ -3,6 +3,11 @@
 #include "request.h"
 #include "list.h"
 #include "processLift.h"
+/*******************************************************************************
+*   PURPOSE: list based queue struct
+*   DATE: 17/04/2020 - 9:20PM
+*   AUTHOR: Jonathan Wright
+*******************************************************************************/
 typedef struct queue {
     linkedList* list;
     int bufferSize;
