@@ -12,6 +12,13 @@ request* createRequest(int inRequest, int inDestination) {
     return newRequest;
 }
 
+request createStackRequest(int inRequest, int inDestination) {
+    request newRequest;
+    newRequest.requestFloor = inRequest;
+    newRequest.destinationFloor = inDestination;
+    return newRequest;
+}
+
 request* createSharedRequest(int inRequest, int inDestination) {
     request* newRequest = (request*)mmap(NULL,sizeof(request),PROT_READ|PROT_WRITE,MAP_SHARED|MAP_ANON,-1,0);
     newRequest->requestFloor = inRequest;
@@ -52,8 +59,8 @@ void* requestt(void* args) {
                     fscanfReturn = fscanf(file, "%d %d\n", &from, &destination);
                 } else {
                     enqueue(createRequest(from, destination), fakeLift->buffer);
-                    fprintf(fakeLift->out_sim_file,"--------------------------------------------\nNew Lift Request From Floor %d to Floor %d\nRequest No: %d\nCurrent Buffer Count: %d\n--------------------------------------------\n\n",
-                    from, destination, linecount, fakeLift->buffer->list->size);
+                    fprintf(fakeLift->out_sim_file,"--------------------------------------------\nNew Lift Request From Floor %d to Floor %d\nRequest No: %d\n--------------------------------------------\n\n",
+                    from, destination, linecount);
                     fscanfReturn = fscanf(file, "%d %d\n", &from, &destination);
                     linecount += 1;
                 }
@@ -112,11 +119,11 @@ void processRequest(void* args) {
                 fscanfReturn = fscanf(file, "%d %d\n", &from, &destination);
                 sem_post(*((*liftZero)->semaphoreEmpty));
             } else {
-                arrayEnqueue(*createRequest(from, destination), (*liftZero)->buffer);
-                sem_wait(*((*liftZero)->fileSem));
-                fprintf((**((*liftZero)->out_sim_file)),"--------------------------------------------\nNew Lift Request From Floor %d to Floor %d\nRequest No: %d\nCurrent Buffer Count: %d\n--------------------------------------------\n\n",
-                from, destination, linecount, (*(*liftZero)->buffer)->size);
-                sem_post(*((*liftZero)->fileSem));
+                arrayEnqueue(createStackRequest(from, destination), (*liftZero)->buffer);
+                sem_wait(*((*liftZero)->liftZeroFileSem));
+                fprintf((**((*liftZero)->out_sim_file)),"--------------------------------------------\nNew Lift Request From Floor %d to Floor %d\nRequest No: %d\n--------------------------------------------\n\n",
+                from, destination, linecount);
+                fflush(**((*liftZero)->out_sim_file));
                 fscanfReturn = fscanf(file, "%d %d\n", &from, &destination);
                 linecount += 1;
                 #ifdef DEBUG
@@ -128,6 +135,7 @@ void processRequest(void* args) {
                 sem_getvalue( *((*liftZero)->semaphoreFull), &tester);
                 printf("FULL SEM VALUE AFTER: %d\n", tester);
                 #endif /* VERIFICATION NEEDED */
+                sem_post(*((*liftZero)->requestFileSem));
             }
         }
     }

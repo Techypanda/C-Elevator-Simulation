@@ -30,5 +30,5 @@ void* lift(void* args);
 void liftProcess(void* args);
 processLift* createProcessLift(arrayQueue** inBuffer, int** inFinishedRead, int inTimer,
 int inNumber, int myCapacity, FILE*** inFile, sem_t** inFullSem, sem_t** inEmptySem,
-sem_t** inFileSem);
+sem_t** inFileSem, sem_t** inRequestFileSem, int** inReturnAddress);
 #endif

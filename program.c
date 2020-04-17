@@ -181,22 +181,31 @@ void beginSimulation(int bufferSize, int liftTime) {
     processLift *liftOne, *liftTwo, *liftThree,  *liftZero;
     pid_t mainProcess, LiftR, Lift_1, Lift_2, Lift_3;
     arrayQueue* reqQueue;
+    int totalMovements, totalRequests;
+    int* liftOneReturns = (int*)mmap(NULL,sizeof(int) * 2,PROT_READ|PROT_WRITE,MAP_SHARED|MAP_ANON,-1,0);
+    int* liftTwoReturns = (int*)mmap(NULL,sizeof(int) * 2,PROT_READ|PROT_WRITE,MAP_SHARED|MAP_ANON,-1,0);
+    int* liftThreeReturns = (int*)mmap(NULL,sizeof(int) * 2,PROT_READ|PROT_WRITE,MAP_SHARED|MAP_ANON,-1,0);
     request* requestBuffer = (request*)mmap(NULL,sizeof(request) * bufferSize,PROT_READ|PROT_WRITE,MAP_SHARED|MAP_ANON,-1,0);
     int* readDone = (int*)mmap(NULL,sizeof(int),PROT_READ|PROT_WRITE,MAP_SHARED|MAP_ANON,-1,0);
     FILE** out_sim_file = (FILE**)mmap(NULL,sizeof(FILE*),PROT_READ|PROT_WRITE,MAP_SHARED|MAP_ANON,-1,0);
     sem_t* fullSem = (sem_t*)mmap(NULL,sizeof(sem_t),PROT_READ|PROT_WRITE,MAP_SHARED|MAP_ANON,-1,0);
     sem_t* emptySem = (sem_t*)mmap(NULL,sizeof(sem_t),PROT_READ|PROT_WRITE,MAP_SHARED|MAP_ANON,-1,0);
-    sem_t* fileSem = (sem_t*)mmap(NULL,sizeof(sem_t),PROT_READ|PROT_WRITE,MAP_SHARED|MAP_ANON,-1,0);
+    sem_t* liftZeroSem = (sem_t*)mmap(NULL,sizeof(sem_t),PROT_READ|PROT_WRITE,MAP_SHARED|MAP_ANON,-1,0);
+    sem_t* requestLiftFileSem = (sem_t*)mmap(NULL,sizeof(sem_t),PROT_READ|PROT_WRITE,MAP_SHARED|MAP_ANON,-1,0);
     sem_init(emptySem, 5, bufferSize);
     sem_init(fullSem, 5, 0);
-    sem_init(fileSem, 5, 1);
-
-    liftOne = createProcessLift(&reqQueue, &readDone, liftTime, 1, bufferSize, &out_sim_file, &fullSem, &emptySem, &fileSem);
-    liftTwo = createProcessLift(&reqQueue, &readDone, liftTime, 2, bufferSize, &out_sim_file, &fullSem, &emptySem, &fileSem);
-    liftThree = createProcessLift(&reqQueue, &readDone, liftTime, 3, bufferSize, &out_sim_file, &fullSem, &emptySem, &fileSem);
-    liftZero = createProcessLift(&reqQueue, &readDone, liftTime, 0, bufferSize, &out_sim_file, &fullSem, &emptySem, &fileSem);
+    sem_init(liftZeroSem, 5, 1);
+    sem_init(requestLiftFileSem, 5, 0);
+    liftOne = createProcessLift(&reqQueue, &readDone, liftTime, 1, bufferSize, &out_sim_file, &fullSem, &emptySem, &liftZeroSem, &requestLiftFileSem, &liftOneReturns);
+    liftTwo = createProcessLift(&reqQueue, &readDone, liftTime, 2, bufferSize, &out_sim_file, &fullSem, &emptySem, &liftZeroSem, &requestLiftFileSem, &liftTwoReturns);
+    liftThree = createProcessLift(&reqQueue, &readDone, liftTime, 3, bufferSize, &out_sim_file, &fullSem, &emptySem, &liftZeroSem, &requestLiftFileSem, &liftThreeReturns);
+    liftZero = createProcessLift(&reqQueue, &readDone, liftTime, 0, bufferSize, &out_sim_file, &fullSem, &emptySem, &liftZeroSem, &requestLiftFileSem, NULL);
     *out_sim_file = fopen("out_sim", "w");
     *readDone = 0;
+    #ifdef OUTSIMASSTDOUT
+    fclose(*out_sim_file);
+    *out_sim_file = stdout;
+    #endif
     if (*out_sim_file == NULL) {
         fprintf(stderr, "Unable to write to file called out_sim.\n");
         exit(EXIT_FAILURE);
@@ -211,9 +220,7 @@ void beginSimulation(int bufferSize, int liftTime) {
         Lift_2 = fork();
     if (mainProcess == getppid())
         Lift_3 = fork();
-
     if (LiftR == 0) {
-        printf("REACHED\n");
         processRequest(&liftZero);
     } else if (Lift_1 == 0) {
         liftProcess(&liftOne);
@@ -226,14 +233,32 @@ void beginSimulation(int bufferSize, int liftTime) {
         waitpid(Lift_1, NULL, 0);
         waitpid(Lift_2, NULL, 0);
         waitpid(Lift_3, NULL, 0);
+        totalMovements = 0;
+        totalRequests = 0;
+        totalMovements += *(liftOneReturns + 0);
+        totalMovements += *(liftTwoReturns + 0);
+        totalMovements += *(liftThreeReturns + 0);
+        totalRequests += *(liftOneReturns + 1);
+        totalRequests += *(liftTwoReturns + 1);
+        totalRequests += *(liftThreeReturns + 1);
+        fprintf(*out_sim_file, "Total number of movements: %d\nTotal number of requests: %d\n", totalMovements, totalRequests);
     }
-    fclose(*out_sim_file);
     cleanupArrayQueue(&reqQueue);
+    fclose(*out_sim_file);
+    free(liftOne);
+    free(liftTwo);
+    free(liftThree);
+    free(liftZero);
     munmap(requestBuffer, sizeof(request) * bufferSize);
     munmap(readDone, sizeof(int));
     munmap(out_sim_file, sizeof(FILE*));
     munmap(fullSem, sizeof(sem_t));
     munmap(emptySem, sizeof(sem_t));
+    munmap(liftZeroSem, sizeof(sem_t));
+    munmap(requestLiftFileSem, sizeof(sem_t));
+    munmap(liftOneReturns, sizeof(int) * 2);
+    munmap(liftTwoReturns, sizeof(int) * 2);
+    munmap(liftThreeReturns, sizeof(int) * 2);
     #ifdef DEBUG
     printf("pid of main: %d\n", mainProcess);
     #endif

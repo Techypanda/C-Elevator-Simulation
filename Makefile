@@ -24,9 +24,19 @@ CFLAGS += -D NOTSLEEP
 NOTSLEEP: clean $(EXEC)
 endif
 
+ifdef OUTSIMASSTDOUT
+CFLAGS += -D OUTSIMASSTDOUT
+OUTSIMASSTDOUT: clean $(EXEC)
+endif
+
 ifdef PROCESS
 CFLAGS += -D PROCESS
 PROCESS: clean $(EXEC)
+endif
+
+ifdef PTHREAD
+CFLAGS += -D PTHREAD
+PTHREAD: clean $(EXEC)
 endif
 
 $(EXEC) : $(OBJS)
