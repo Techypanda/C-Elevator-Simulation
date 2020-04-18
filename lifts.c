@@ -56,6 +56,7 @@ void* lift(void* args) {
                         thisLift->liftNumber, ((request*)currentRequest)->requestFloor, ((request*)currentRequest)->destinationFloor, 1, ((request*)currentRequest)->requestFloor, ((request*)currentRequest)->requestFloor, ((request*)currentRequest)->destinationFloor,
                         distance, *((thisLift->liftReturnVals) + 1), *((thisLift->liftReturnVals) + 0), ((request*)currentRequest)->requestFloor
                     );
+                    fflush(thisLift->out_sim_file);
                     thisLift->previousRequest = ((request*)currentRequest);
                     #ifndef NOTSLEEP
                     sleepNeeded = TRUE;
@@ -69,6 +70,7 @@ void* lift(void* args) {
                         thisLift->liftNumber, thisLift->previousRequest->destinationFloor, ((request*)currentRequest)->requestFloor, ((request*)currentRequest)->destinationFloor, thisLift->previousRequest->destinationFloor, ((request*)currentRequest)->requestFloor,
                         ((request*)currentRequest)->requestFloor, ((request*)currentRequest)->destinationFloor, distance, *((thisLift->liftReturnVals) + 1), *((thisLift->liftReturnVals) + 0), ((request*)currentRequest)->requestFloor
                     );
+                    fflush(thisLift->out_sim_file);
                     tempRequest = thisLift->previousRequest;
                     thisLift->previousRequest = ((request*)currentRequest);
                     free(tempRequest);
