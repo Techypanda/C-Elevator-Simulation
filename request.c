@@ -63,6 +63,8 @@ void* requestt(void* args) {
     liftStruct* fakeLift;
     int destination, from, fscanfReturn;
     file = fopen("sim_input", "r");
+    linecount = 1;
+    fakeLift = (liftStruct*)args; /* This is not a actual lift */
     if (file == NULL) {
         fprintf(stderr, "Unable to read sim_input, Did you put a file called sim_input in my directory?\nTerminating!\n");
         pthread_mutex_lock(fakeLift->mutexLock);
@@ -70,8 +72,6 @@ void* requestt(void* args) {
         pthread_mutex_unlock(fakeLift->mutexLock);
         exit(EXIT_FAILURE);
     }
-    linecount = 1;
-    fakeLift = (liftStruct*)args; /* This is not a actual lift */
     fscanfReturn = fscanf(file, "%d %d\n", &from, &destination);
     while (fscanfReturn != EOF) {
         pthread_mutex_lock(fakeLift->mutexLock);
