@@ -115,7 +115,7 @@ void liftProcess(void* args) {
     int tester;
     #endif
     #ifndef NOTSLEEP
-    int localSleepTimer
+    int localSleepTimer;
     #endif
     int distance, sleepNeeded;
     processLift** thisLift;
