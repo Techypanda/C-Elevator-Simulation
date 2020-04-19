@@ -110,11 +110,12 @@ void* lift(void* args) {
 *******************************************************************************/
 void liftProcess(void* args) {
     struct timespec tims;
+    int localCount;
     #ifdef DEBUG
     int tester;
     #endif
     #ifndef NOTSLEEP
-    int localSleepTimer, localCount;
+    int localSleepTimer
     #endif
     int distance, sleepNeeded;
     processLift** thisLift;
