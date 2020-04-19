@@ -27,30 +27,31 @@
 *   AUTHOR: Jonathan Wright
 *******************************************************************************/
 int main(int argc, char** argv) {
-    /*
-        TODO: FILTER OUT NEGATIVES
-              FILTER OUT ZEROS.
-    */
-    char* endptr;
+    char* endCharacter;
     int bufferSize, liftTime;
     if (argc == 3) {
-        bufferSize = strtol(argv[1], &endptr, 10);
+        bufferSize = strtol(argv[1], &endCharacter, 10);
+            /* This Error Check is from the Linux C Man on strtol */
         if ((errno == ERANGE && (bufferSize == LONG_MAX || bufferSize == LONG_MIN)) || (errno != 0 && bufferSize == 0)) {
-            fprintf(stderr, "Invalid Number Entered for m: %s\n", argv[1]);
+            fprintf(stderr, "Invalid Integer Entered for bufferSize: %s\n", argv[1]);
             exit(EXIT_FAILURE);
         }
-        if (endptr == argv[1]) {
+        /* This Error Check is from the Linux C Man on strtol */
+        if (endCharacter == argv[1]) {
             fprintf(stderr, "No Digits were found for m.\n");
             exit(EXIT_FAILURE);
         }
-        if (*endptr != '\0')
+        /* This Error Check is from the Linux C Man on strtol */
+        if (*endCharacter != '\0')
             printf("Only integers can be entered, decimal point has been cut off for buffer.\n");
-        liftTime = strtol(argv[2], &endptr, 10);
-        if (endptr == argv[2]) {
+        liftTime = strtol(argv[2], &endCharacter, 10);
+        /* This Error Check is from the Linux C Man on strtol */
+        if (endCharacter == argv[2]) {
             fprintf(stderr, "No Digits were found for t.\n");
             exit(EXIT_FAILURE);
         }
-        if (*endptr != '\0')
+        /* This Error Check is from the Linux C Man on strtol */
+        if (*endCharacter != '\0')
             printf("Only integers can be entered, decimal point has been cut off for time.\n");
         if ((errno == ERANGE && (liftTime == LONG_MAX || liftTime == LONG_MIN)) || (errno != 0 && liftTime == 0)) {
             fprintf(stderr, "Invalid Number Entered for m: %s\n", argv[1]);
