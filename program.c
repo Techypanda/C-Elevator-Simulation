@@ -220,16 +220,14 @@ void beginSimulation(int bufferSize, int liftTime) {
     FILE** out_sim_file = (FILE**)mmap(NULL,sizeof(FILE*),PROT_READ|PROT_WRITE,MAP_SHARED|MAP_ANON,-1,0);
     sem_t* fullSem = (sem_t*)mmap(NULL,sizeof(sem_t),PROT_READ|PROT_WRITE,MAP_SHARED|MAP_ANON,-1,0);
     sem_t* emptySem = (sem_t*)mmap(NULL,sizeof(sem_t),PROT_READ|PROT_WRITE,MAP_SHARED|MAP_ANON,-1,0);
-    sem_t* liftZeroSem = (sem_t*)mmap(NULL,sizeof(sem_t),PROT_READ|PROT_WRITE,MAP_SHARED|MAP_ANON,-1,0);
-    sem_t* requestLiftFileSem = (sem_t*)mmap(NULL,sizeof(sem_t),PROT_READ|PROT_WRITE,MAP_SHARED|MAP_ANON,-1,0);
+    sem_t* mutSem = (sem_t*)mmap(NULL,sizeof(sem_t),PROT_READ|PROT_WRITE,MAP_SHARED|MAP_ANON,-1,0);
     sem_init(emptySem, 5, bufferSize);
     sem_init(fullSem, 5, 0);
-    sem_init(liftZeroSem, 5, 1);
-    sem_init(requestLiftFileSem, 5, 0);
-    liftOne = createProcessLift(&reqQueue, &readDone, liftTime, 1, bufferSize, &out_sim_file, &fullSem, &emptySem, &liftZeroSem, &requestLiftFileSem, &liftOneReturns);
-    liftTwo = createProcessLift(&reqQueue, &readDone, liftTime, 2, bufferSize, &out_sim_file, &fullSem, &emptySem, &liftZeroSem, &requestLiftFileSem, &liftTwoReturns);
-    liftThree = createProcessLift(&reqQueue, &readDone, liftTime, 3, bufferSize, &out_sim_file, &fullSem, &emptySem, &liftZeroSem, &requestLiftFileSem, &liftThreeReturns);
-    liftZero = createProcessLift(&reqQueue, &readDone, liftTime, 0, bufferSize, &out_sim_file, &fullSem, &emptySem, &liftZeroSem, &requestLiftFileSem, NULL);
+    sem_init(mutSem, 5, 1);
+    liftOne = createProcessLift(&reqQueue, &readDone, liftTime, 1, bufferSize, &out_sim_file, &fullSem, &emptySem, &mutSem, &liftOneReturns);
+    liftTwo = createProcessLift(&reqQueue, &readDone, liftTime, 2, bufferSize, &out_sim_file, &fullSem, &emptySem, &mutSem, &liftTwoReturns);
+    liftThree = createProcessLift(&reqQueue, &readDone, liftTime, 3, bufferSize, &out_sim_file, &fullSem, &emptySem, &mutSem, &liftThreeReturns);
+    liftZero = createProcessLift(&reqQueue, &readDone, liftTime, 0, bufferSize, &out_sim_file, &fullSem, &emptySem, &mutSem, NULL);
     *out_sim_file = fopen("out_sim", "w");
     *readDone = 0;
     #ifdef OUTSIMASSTDOUT
@@ -284,8 +282,7 @@ void beginSimulation(int bufferSize, int liftTime) {
     munmap(out_sim_file, sizeof(FILE*));
     munmap(fullSem, sizeof(sem_t));
     munmap(emptySem, sizeof(sem_t));
-    munmap(liftZeroSem, sizeof(sem_t));
-    munmap(requestLiftFileSem, sizeof(sem_t));
+    munmap(mutSem, sizeof(sem_t));
     munmap(liftOneReturns, sizeof(int) * 2);
     munmap(liftTwoReturns, sizeof(int) * 2);
     munmap(liftThreeReturns, sizeof(int) * 2);

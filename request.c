@@ -139,15 +139,8 @@ void processRequest(void* args) {
     fscanfReturn = fscanf(file, "%d %d\n", &from, &destination);
     while (fscanfReturn != EOF)
     {
-        #ifdef DEBUG
-        sem_getvalue( *((*liftZero)->semaphoreEmpty), &tester);
-        printf("EMPTY SEM VALUE BEFORE: %d\n", tester);
-        #endif
         sem_wait(*((*liftZero)->semaphoreEmpty));
-        #ifdef DEBUG
-        sem_getvalue( *((*liftZero)->semaphoreEmpty), &tester);
-        printf("SEM VALUE AFTER: %d\n", tester);
-        #endif
+        sem_wait(*((*liftZero)->mutexSem));
         if (fscanfReturn != 2) {
             printf("A Line contains too many values or an invalid character, program will now stop.\n");
             **((*liftZero)->finishedRead) = TRUE;
@@ -166,24 +159,15 @@ void processRequest(void* args) {
                 sem_post(*((*liftZero)->semaphoreEmpty));
             } else {
                 arrayEnqueue(createStackRequest(from, destination), (*liftZero)->buffer);
-                sem_wait(*((*liftZero)->liftZeroFileSem));
                 fprintf((**((*liftZero)->out_sim_file)),"--------------------------------------------\nNew Lift Request From Floor %d to Floor %d\nRequest No: %d\n--------------------------------------------\n\n",
                 from, destination, linecount);
                 fflush(**((*liftZero)->out_sim_file));
                 fscanfReturn = fscanf(file, "%d %d\n", &from, &destination);
                 linecount += 1;
-                #ifdef DEBUG
-                sem_getvalue( *((*liftZero)->semaphoreFull), &tester);
-                printf("FULL SEM VALUE BEFORE: %d\n", tester);
-                #endif
                 sem_post(*((*liftZero)->semaphoreFull));
-                #ifdef DEBUG
-                sem_getvalue( *((*liftZero)->semaphoreFull), &tester);
-                printf("FULL SEM VALUE AFTER: %d\n", tester);
-                #endif /* VERIFICATION NEEDED */
-                sem_post(*((*liftZero)->requestFileSem));
             }
         }
+        sem_post(*((*liftZero)->mutexSem));
     }
     **((*liftZero)->finishedRead) = TRUE;
     fclose(file);

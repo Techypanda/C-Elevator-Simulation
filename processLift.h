@@ -29,7 +29,6 @@ typedef struct processLift {
     FILE*** out_sim_file;
     sem_t** semaphoreFull;
     sem_t** semaphoreEmpty;
-    sem_t** liftZeroFileSem;
-    sem_t** requestFileSem;
+    sem_t** mutexSem;
 } processLift;
 #endif
