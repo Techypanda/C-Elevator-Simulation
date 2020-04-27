@@ -64,7 +64,7 @@ int main(int argc, char** argv) {
             fprintf(stderr, "A Non-Zero Integer Number has to be input for bufferSize.\n");
             exit(EXIT_FAILURE);
         }
-        if (liftTime <= 0) {
+        if (liftTime < 0) {
             fprintf(stderr, "A Non-Zero Integer Number has to be input for liftTime.\n");
             exit(EXIT_FAILURE);
         }
